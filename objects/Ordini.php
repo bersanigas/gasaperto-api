@@ -23,12 +23,14 @@ class Ordini
     private $data_chiusura;
     private $data_consegna;
     private $statoOrdine;
+    private $user;
 
     private $conn;
 
-    public function __construct($db, $id) {
+    public function __construct($db, $id, $user) {
         $this->conn = $db;
         $this->id = $id;
+        $this->user = $user;
     }
 
     public function read() {
@@ -38,6 +40,19 @@ class Ordini
         if ($this->id > 0) {
             $query .= " AND id = '" . $this->id . "'";
         }
+
+        // Eseguo query
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    public function getProdottiPerOdine() {
+        $nomeTabella = "prodotti_ordine_" . $this->id;
+        $query = "SELECT * FROM " . $nomeTabella . " as uo " .
+                 "JOIN prodotti as p on uo.prodotto = p.id " .
+                 "WHERE uo.utente = '" . $this->user . "' AND disponibile = 'si' ORDER BY p.descrizione";
 
         // Eseguo query
         $stmt = $this->conn->prepare($query);
