@@ -4,6 +4,8 @@
  * User: BIASTE
  * Date: 14/02/2018
  * Time: 12:05
+ * read() -> Metodo che estrae la lista degli ordini non 'evasi', con la possibilità di filtrare per
+ * singolo ordine
  */
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
