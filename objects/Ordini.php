@@ -9,30 +9,28 @@
 class Ordini
 {
     private $id;
-    private $fornitore;
-    private $gestore;
-    private $data_apertura;
-    private $msg_apertura;
-    private $msg_chiusura;
-    private $msg_consegna;
-    private $stato;
-    private $totale;
-    private $spese_acc;
-    private $nome_report;
-    private $fuori_bilancio;
-    private $data_chiusura;
-    private $data_consegna;
-    private $statoOrdine;
     private $user;
+    private $quantita;
+    private $note;
+    private $idProdotto;
 
     private $conn;
+    private $prefixTabella = "prodotti_ordine_";
+    private $nomeTabellaOrdini;
 
-    public function __construct($db, $id, $user) {
+    public function __construct($db, $id, $user = null, $quantita = 0, $note = null, $idProdotto = 0) {
         $this->conn = $db;
         $this->id = $id;
         $this->user = $user;
+        $this->quantita = $quantita;
+        $this->note = $note;
+        $this->idProdotto = $idProdotto;
+        $this->nomeTabellaOrdini = $this->prefixTabella . $id;
     }
 
+    /** Metodo che estrae tutti gli ordini che non sono stati ancora evasi
+     * @return mixed
+     */
     public function read() {
         $query = "SELECT * FROM ordini_gas WHERE stato <> 'evaso' ";
 
@@ -48,9 +46,12 @@ class Ordini
         return $stmt;
     }
 
+    /** Metodo che estrae i prodotti associati all'ordine di un determinato utente
+     * @return mixed
+     */
     public function getProdottiPerOdine() {
-        $nomeTabella = "prodotti_ordine_" . $this->id;
-        $query = "SELECT * FROM " . $nomeTabella . " as uo " .
+
+        $query = "SELECT * FROM " . $this->nomeTabellaOrdini. " as uo " .
                  "JOIN prodotti as p on uo.prodotto = p.id " .
                  "WHERE uo.utente = '" . $this->user . "' AND disponibile = 'si' ORDER BY p.descrizione";
 
@@ -59,6 +60,23 @@ class Ordini
         $stmt->execute();
 
         return $stmt;
+    }
+
+    /** Aggiorna quantitativo ordinato per l'utente
+     * @return bool
+     */
+    public function updateOrdineUtente(){
+        $query = "UPDATE " . $this->nomeTabellaOrdini . " SET " .
+                 "quantita = " . $this->quantita . ", " .
+                 "note = '" . $this->note . "' " .
+                 "WHERE utente = '" . $this->user . "' AND prodotto = " . $this->idProdotto;
+        $stmt = $this->conn->prepare($query);
+
+        if($stmt->execute()) {
+            return true;
+        }
+
+        return $stmt->errorInfo();
     }
 
 }
