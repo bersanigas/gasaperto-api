@@ -4,6 +4,8 @@
  * User: BIASTE
  * Date: 14/02/2018
  * Time: 16:36
+ * read_ordini_prodotti() -> Metodo che interroga le tabelle temporanee, create durante l'inserimento del singolo
+ * ordine, al fine di estrarre i prodotti ordinati per singolo utente.
  */
 
 header("Access-Control-Allow-Origin: *");
