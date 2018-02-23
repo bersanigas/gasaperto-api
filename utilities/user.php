@@ -8,7 +8,8 @@
 
 
 function autenticaUtente($db, $user, $pass){
-    $query = " SELECT * FROM utenti WHERE username = '" . $user . "' AND password = '" . $pass ."' and data_cessazione IS NOT NULL";
+    $query = " SELECT * FROM utenti WHERE username = '" . $user . "' AND password = '" . $pass .
+        "' AND (data_cessazione = '0000-00-00 00:00:00' or data_cessazione is null)";
     $stmt = $db->prepare($query);
     $stmt->execute();
 
