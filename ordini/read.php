@@ -17,9 +17,6 @@ if (!isset($_SERVER['PHP_AUTH_USER'])) {
     exit;
 }
 
-//$_SERVER['PHP_AUTH_PW']
-//$_SERVER['PHP_AUTH_USER']
-
 include_once "../config/database.php";
 include_once "../objects/ordini.php";
 require_once "../utilities/user.php";
@@ -39,7 +36,7 @@ if (!autenticaUtente($database, $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW
 $idOrdine = isset($_GET['id']) ? $_GET['id'] : 0;
 
 // Istanza dell'oggetto ordini
-$ordini = new Ordini($database, $idOrdine);
+$ordini = new Ordini($database, $idOrdine, $_SERVER['PHP_AUTH_USER']);
 
 $stmt = $ordini->read();
 $numOrdini = $stmt->rowCount();
@@ -57,17 +54,21 @@ if($numOrdini>0){
         $product_item= [
             "id" => $id,
             "fornitore" => html_entity_decode($fornitore),
-            "gestore" => html_entity_decode($gestore),
-            "data_apertura" => $data_apertura,
+            "stato" => $stato,
+            "ditta" => $ditta,
+            "cognomeGestore" => $cognomeGestore,
+            "nomeGestore" => $nomeGestore,
+            "emailGestore" => $emailGestore,
+            "dataApertura" => $dataApertura,
             "msg_apertura" => $msg_apertura,
             "msg_chiusura" => $msg_chiusura,
             "msg_consegna" => $msg_consegna,
-            "stato" => $stato,
+            "dataChiusura" => $dataChiusura,
+            "dataConsegna" => $dataConsegna,
             "totale" => $totale,
             "spese_acc" => $spese_acc,
             "fuori_bilancio" => $fuori_bilancio,
-            "data_chiusura" => $data_chiusura,
-            "data_consegna" => $data_consegna
+            "saldoUtenteOrdine" => $ordini->getContoOrdine($id)
         ];
 
         array_push($products_arr["records"], $product_item);
