@@ -32,12 +32,22 @@ class Ordini
      * @return mixed
      */
     public function read() {
-        $query = "SELECT * FROM ordini_gas WHERE stato <> 'evaso' ";
+        $query =    "SELECT " .
+                    " o.id, o.fornitore, o.stato, f.ditta, " .
+                    " u.cognome as cognomeGestore, u.nome as nomeGestore, u.email as emailGestore, " .
+                    " date(o.data_apertura) as dataApertura, o.msg_apertura, o.msg_chiusura, o.msg_consegna, " .
+                    " date(o.data_chiusura) as dataChiusura, date(o.data_consegna) as dataConsegna, o.totale, o.spese_acc, o.fuori_bilancio " .
+                    " FROM ordini_gas as o " .
+                    " join fornitori as f on o.fornitore = f.id " .
+                    " join utenti as u on o.gestore = u.username " .
+                    " WHERE o.stato <> 'evaso' ";
 
         // Verifico la presenza di filtri sull'id ordine
         if ($this->id > 0) {
-            $query .= " AND id = '" . $this->id . "'";
+            $query .= " AND o.id = '" . $this->id . "'";
         }
+
+        $query .= " ORDER BY o.stato, o.data_chiusura ";
 
         // Eseguo query
         $stmt = $this->conn->prepare($query);
@@ -77,6 +87,29 @@ class Ordini
         }
 
         return $stmt->errorInfo();
+    }
+
+    public function getContoOrdine($idOrdine) {
+        $tab = $this->prefixTabella . $idOrdine;
+
+        $query = "SELECT uo.quantita, p.prezzo FROM " . $tab. " as uo " .
+            "JOIN prodotti as p on uo.prodotto = p.id " .
+            "WHERE uo.utente = '" . $this->user . "' AND disponibile = 'si' ORDER BY p.descrizione";
+
+        // Eseguo query
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $data = $stmt->fetchAll();
+
+        $saldo = 0;
+        foreach($data as $row) {
+            if ($row['quantita'] > 0) {
+                $prezzoProd = $row['quantita'] * $row['prezzo'];
+                $saldo = $saldo + $prezzoProd;
+            }
+        }
+
+        return $saldo;
     }
 
 }
